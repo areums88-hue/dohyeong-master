@@ -25,106 +25,115 @@
       return (p2.y - p1.y) * (p3.x - p2.x) === (p3.y - p2.y) * (p2.x - p1.x);
     };
 
-    const generateSymmetryProblem = () => {
-      // 대각선(2, 3)을 제거하고 수직(0), 수평(1)만 출제
-      const axisType = Math.floor(Math.random() * 2);
-      let points = [];
+    // 이전 문제의 고유 형태(prevSignature)를 받아와서 중복을 방지합니다.
+    const generateSymmetryProblem = (prevSignature = null) => {
+      while (true) {
+        // 대각선(2, 3)을 제거하고 수직(0), 수평(1)만 출제
+        const axisType = Math.floor(Math.random() * 2);
+        let points = [];
 
-      if (axisType === 0) {
-        const axisPos = 5;
-        let side = Math.random() < 0.5 ? 1 : -1;
-        let startY = Math.floor(Math.random() * 3) + 1; // 1 ~ 3
-        let height = Math.floor(Math.random() * 4) + 3; // 3 ~ 6
-        let endY = startY + height;
-        if (endY > 9) endY = 9;
-        
-        let w = (Math.floor(Math.random() * 3) + 2) * side; // 축으로부터의 너비
-        let shapeType = Math.floor(Math.random() * 4); // 0: 삼각형, 1: 직사각형, 2: 사다리꼴, 3: 평행사변형 등
-        
-        points.push({ x: axisPos, y: startY });
-        
-        if (shapeType === 0) { // 삼각형 모양
-            let midY = startY + Math.floor((endY - startY) / 2);
-            points.push({ x: axisPos + w, y: midY });
-        } else if (shapeType === 1) { // 직사각형 모양
-            points.push({ x: axisPos + w, y: startY });
-            points.push({ x: axisPos + w, y: endY });
-        } else if (shapeType === 2) { // 사다리꼴 모양
-            let topOffset = Math.floor(Math.random() * 2);
-            let botOffset = Math.floor(Math.random() * 2);
-            if (topOffset === 0 && botOffset === 0) {
-                if (endY - startY > 3) botOffset = 1;
-                else topOffset = 1;
-            }
-            points.push({ x: axisPos + w, y: startY + topOffset });
-            points.push({ x: axisPos + w, y: endY - botOffset });
-        } else { // 평행사변형/기타 다각형
-            let offset = Math.floor(Math.random() * 2) + 1;
-            points.push({ x: axisPos + w, y: startY + offset });
-            points.push({ x: axisPos + w, y: endY });
-        }
-        
-        points.push({ x: axisPos, y: endY });
-        
-      } else if (axisType === 1) { 
-        const axisPos = 5; 
-        let side = Math.random() < 0.5 ? 1 : -1;
-        let startX = Math.floor(Math.random() * 3) + 1; // 1 ~ 3
-        let width = Math.floor(Math.random() * 4) + 3; // 3 ~ 6
-        let endX = startX + width;
-        if (endX > 9) endX = 9;
-        
-        let h = (Math.floor(Math.random() * 3) + 2) * side; // 축으로부터의 높이
-        let shapeType = Math.floor(Math.random() * 4);
-        
-        points.push({ x: startX, y: axisPos });
-        
-        if (shapeType === 0) { // 삼각형 모양
-            let midX = startX + Math.floor((endX - startX) / 2);
-            points.push({ x: midX, y: axisPos + h });
-        } else if (shapeType === 1) { // 직사각형 모양
-            points.push({ x: startX, y: axisPos + h });
-            points.push({ x: endX, y: axisPos + h });
-        } else if (shapeType === 2) { // 사다리꼴 모양
-            let leftOffset = Math.floor(Math.random() * 2);
-            let rightOffset = Math.floor(Math.random() * 2);
-            if (leftOffset === 0 && rightOffset === 0) {
-                if (endX - startX > 3) rightOffset = 1;
-                else leftOffset = 1;
-            }
-            points.push({ x: startX + leftOffset, y: axisPos + h });
-            points.push({ x: endX - rightOffset, y: axisPos + h });
-        } else { // 평행사변형/기타 다각형
-            let offset = Math.floor(Math.random() * 2) + 1;
-            points.push({ x: startX + offset, y: axisPos + h });
-            points.push({ x: endX, y: axisPos + h });
-        }
-        
-        points.push({ x: endX, y: axisPos });
-      }
-
-      let cleanPoints = [points[0]];
-      for(let i=1; i<points.length-1; i++) {
-          if(!isColinear(cleanPoints[cleanPoints.length-1], points[i], points[i+1])) {
-              cleanPoints.push(points[i]);
+        if (axisType === 0) {
+          const axisPos = 5;
+          let side = Math.random() < 0.5 ? 1 : -1;
+          let startY = Math.floor(Math.random() * 3) + 1; // 1 ~ 3
+          let height = Math.floor(Math.random() * 4) + 3; // 3 ~ 6
+          let endY = startY + height;
+          if (endY > 9) endY = 9;
+          
+          let w = (Math.floor(Math.random() * 3) + 2) * side; // 축으로부터의 너비
+          let shapeType = Math.floor(Math.random() * 4); // 0: 삼각형, 1: 직사각형, 2: 사다리꼴, 3: 평행사변형 등
+          
+          points.push({ x: axisPos, y: startY });
+          
+          if (shapeType === 0) { // 삼각형 모양
+              let midY = startY + Math.floor((endY - startY) / 2);
+              points.push({ x: axisPos + w, y: midY });
+          } else if (shapeType === 1) { // 직사각형 모양
+              points.push({ x: axisPos + w, y: startY });
+              points.push({ x: axisPos + w, y: endY });
+          } else if (shapeType === 2) { // 사다리꼴 모양
+              let topOffset = Math.floor(Math.random() * 2);
+              let botOffset = Math.floor(Math.random() * 2);
+              if (topOffset === 0 && botOffset === 0) {
+                  if (endY - startY > 3) botOffset = 1;
+                  else topOffset = 1;
+              }
+              points.push({ x: axisPos + w, y: startY + topOffset });
+              points.push({ x: axisPos + w, y: endY - botOffset });
+          } else { // 평행사변형/기타 다각형
+              let offset = Math.floor(Math.random() * 2) + 1;
+              points.push({ x: axisPos + w, y: startY + offset });
+              points.push({ x: axisPos + w, y: endY });
           }
-      }
-      cleanPoints.push(points[points.length-1]);
-      
-      let targetPoints = cleanPoints.map(p => {
-           if(axisType === 0) return { x: 10 - p.x, y: p.y };
-           if(axisType === 1) return { x: p.x, y: 10 - p.y };
-      });
+          
+          points.push({ x: axisPos, y: endY });
+          
+        } else if (axisType === 1) { 
+          const axisPos = 5; 
+          let side = Math.random() < 0.5 ? 1 : -1;
+          let startX = Math.floor(Math.random() * 3) + 1; // 1 ~ 3
+          let width = Math.floor(Math.random() * 4) + 3; // 3 ~ 6
+          let endX = startX + width;
+          if (endX > 9) endX = 9;
+          
+          let h = (Math.floor(Math.random() * 3) + 2) * side; // 축으로부터의 높이
+          let shapeType = Math.floor(Math.random() * 4);
+          
+          points.push({ x: startX, y: axisPos });
+          
+          if (shapeType === 0) { // 삼각형 모양
+              let midX = startX + Math.floor((endX - startX) / 2);
+              points.push({ x: midX, y: axisPos + h });
+          } else if (shapeType === 1) { // 직사각형 모양
+              points.push({ x: startX, y: axisPos + h });
+              points.push({ x: endX, y: axisPos + h });
+          } else if (shapeType === 2) { // 사다리꼴 모양
+              let leftOffset = Math.floor(Math.random() * 2);
+              let rightOffset = Math.floor(Math.random() * 2);
+              if (leftOffset === 0 && rightOffset === 0) {
+                  if (endX - startX > 3) rightOffset = 1;
+                  else leftOffset = 1;
+              }
+              points.push({ x: startX + leftOffset, y: axisPos + h });
+              points.push({ x: endX - rightOffset, y: axisPos + h });
+          } else { // 평행사변형/기타 다각형
+              let offset = Math.floor(Math.random() * 2) + 1;
+              points.push({ x: startX + offset, y: axisPos + h });
+              points.push({ x: endX, y: axisPos + h });
+          }
+          
+          points.push({ x: endX, y: axisPos });
+        }
 
-      let edges = new Set();
-      for(let i=0; i<targetPoints.length-1; i++) {
-          let p1 = targetPoints[i];
-          let p2 = targetPoints[i+1];
-          let edge = [p1.x+','+p1.y, p2.x+','+p2.y].sort().join('-');
-          edges.add(edge);
-      }
+        let cleanPoints = [points[0]];
+        for(let i=1; i<points.length-1; i++) {
+            if(!isColinear(cleanPoints[cleanPoints.length-1], points[i], points[i+1])) {
+                cleanPoints.push(points[i]);
+            }
+        }
+        cleanPoints.push(points[points.length-1]);
+        
+        // 현재 생성된 문제의 고유 형태(서명) 생성
+        let currentSignature = `${axisType}|${cleanPoints.map(p=>`${p.x},${p.y}`).join('|')}`;
+        
+        // 이전 문제와 똑같지 않다면 이 문제를 사용 (중복이면 다시 while문 처음으로 돌아가 생성)
+        if (currentSignature !== prevSignature) {
+            let targetPoints = cleanPoints.map(p => {
+                 if(axisType === 0) return { x: 10 - p.x, y: p.y };
+                 if(axisType === 1) return { x: p.x, y: 10 - p.y };
+            });
 
-      return { axisType, points: cleanPoints, targetEdgesSet: Array.from(edges) };
+            let edges = new Set();
+            for(let i=0; i<targetPoints.length-1; i++) {
+                let p1 = targetPoints[i];
+                let p2 = targetPoints[i+1];
+                let edge = [p1.x+','+p1.y, p2.x+','+p2.y].sort().join('-');
+                edges.add(edge);
+            }
+
+            return { axisType, points: cleanPoints, targetEdgesSet: Array.from(edges), signature: currentSignature };
+        }
+      }
     };
 
     function App() {
@@ -134,7 +143,7 @@
       const [level, setLevel] = useState(1);
       
       const [gameState, setGameState] = useState('playing'); 
-      const [problem, setProblem] = useState(generateSymmetryProblem);
+      const [problem, setProblem] = useState(() => generateSymmetryProblem());
       const [userPath, setUserPath] = useState([]);
       const [feedback, setFeedback] = useState(null);
       const [nickname, setNickname] = useState('');
@@ -150,7 +159,7 @@
         setProblemCount(0);
         setLevel(1);
         setGameState('playing');
-        setProblem(generateSymmetryProblem());
+        setProblem(prev => generateSymmetryProblem(prev.signature));
         setUserPath([]);
         setFeedback(null);
       };
@@ -183,7 +192,7 @@
               setLevel(l => l + 1);
               setGameState('paused');
             } else {
-              setProblem(generateSymmetryProblem());
+              setProblem(prev => generateSymmetryProblem(prev.signature));
             }
             setUserPath([]);
             setFeedback(null);
@@ -241,7 +250,7 @@
             </div>
 
             <div className="space-y-3">
-              <button onClick={() => { setGameState('playing'); setProblem(generateSymmetryProblem()); }} className="w-full bg-green-400 hover:bg-green-500 text-white p-4 rounded-2xl font-bold flex items-center justify-center gap-2 text-lg transition-colors">
+              <button onClick={() => { setGameState('playing'); setProblem(prev => generateSymmetryProblem(prev.signature)); }} className="w-full bg-green-400 hover:bg-green-500 text-white p-4 rounded-2xl font-bold flex items-center justify-center gap-2 text-lg transition-colors">
                 ▶️ 다음 레벨로 계속하기
               </button>
               <button onClick={() => setGameState('gameOver')} className="w-full bg-gray-200 hover:bg-gray-300 text-gray-700 p-4 rounded-2xl font-bold flex items-center justify-center gap-2 text-lg transition-colors">
