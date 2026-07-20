@@ -26,81 +26,77 @@
     };
 
     const generateSymmetryProblem = () => {
-      const axisType = Math.floor(Math.random() * 4);
-      let points = [];
-      const numInnerPoints = Math.floor(Math.random() * 2) + 1; 
+      // 0: 수직축, 1: 수평축 (대각선 제거)
+      const axisType = Math.floor(Math.random() * 2); 
+      // 대칭축의 위치를 가운데(5)뿐만 아니라 4~6 사이로 다양화
+      const axisPos = Math.floor(Math.random() * 3) + 4; 
+      const side = Math.random() < 0.5 ? 1 : -1;
+      
+      // 0: 삼각형(마름모 반), 1: 직사각형, 2: 사다리꼴(육각형 반 등), 3: 일반 다각형
+      const shapeType = Math.floor(Math.random() * 4); 
 
-      if (axisType === 0) {
-        const axisPos = 5;
-        let side = Math.random() < 0.5 ? 1 : -1;
-        let startY = Math.floor(Math.random() * 3) + 1;
-        points.push({ x: axisPos, y: startY }); 
-        
-        for(let i=1; i<=numInnerPoints; i++) {
-            let dx = Math.floor(Math.random() * 3) + 1; 
-            let x = axisPos + (side * dx);
-            if (x < 1) x = 1; if (x > 9) x = 9; 
-            let y = startY + i * 2 + Math.floor(Math.random() * 2);
-            if (y > 8) y = 8;
-            points.push({ x, y });
-        }
-        
-        let endY = points[points.length-1].y + Math.floor(Math.random()*3) + 1;
+      let points = [];
+
+      if (axisType === 0) { // 수직축 (y축 평행)
+        const startY = Math.floor(Math.random() * 3) + 1;
+        let endY = startY + Math.floor(Math.random() * 4) + 3;
         if (endY > 9) endY = 9;
-        points.push({ x: axisPos, y: endY }); 
-        
-      } else if (axisType === 1) { 
-        const axisPos = 5; 
-        let side = Math.random() < 0.5 ? 1 : -1;
-        let startX = Math.floor(Math.random() * 3) + 1;
-        points.push({ x: startX, y: axisPos }); 
-        
-        for(let i=1; i<=numInnerPoints; i++) {
-            let dy = Math.floor(Math.random() * 3) + 1;
-            let y = axisPos + (side * dy);
-            if (y < 1) y = 1; if (y > 9) y = 9; 
-            let x = startX + i * 2 + Math.floor(Math.random()*2);
-            if (x > 8) x = 8;
-            points.push({ x, y });
+
+        const maxW = side === 1 ? 10 - axisPos : axisPos;
+        const actualW = Math.min(Math.floor(Math.random() * 3) + 2, maxW);
+        const w = actualW * side;
+
+        if (shapeType === 0) { // 삼각형
+          const midY = startY + Math.floor((endY - startY) / 2) + (Math.random() < 0.5 ? 0 : 1);
+          points = [{ x: axisPos, y: startY }, { x: axisPos + w, y: midY }, { x: axisPos, y: endY }];
+        } else if (shapeType === 1) { // 직사각형
+          points = [{ x: axisPos, y: startY }, { x: axisPos + w, y: startY }, { x: axisPos + w, y: endY }, { x: axisPos, y: endY }];
+        } else if (shapeType === 2) { // 사다리꼴
+          const topOffset = Math.floor(Math.random() * 2);
+          const botOffset = Math.floor(Math.random() * 2);
+          points = [{ x: axisPos, y: startY }, { x: axisPos + w, y: startY + topOffset }, { x: axisPos + w, y: endY - botOffset }, { x: axisPos, y: endY }];
+          // 직사각형과 똑같아지는 것을 방지
+          if (topOffset === 0 && botOffset === 0 && (endY - startY > 2)) {
+            points[1].y += 1;
+          }
+        } else { // 다각형
+          const y1 = startY + 1 + Math.floor(Math.random() * 2);
+          const y2 = endY - 1 - Math.floor(Math.random() * 2);
+          let w1 = w;
+          let w2 = Math.floor(actualW / 2 + 1) * side;
+          if (Math.random() < 0.5) { [w1, w2] = [w2, w1]; }
+          points = [{ x: axisPos, y: startY }, { x: axisPos + w1, y: y1 }, { x: axisPos + w2, y: y2 }, { x: axisPos, y: endY }];
         }
         
-        let endX = points[points.length-1].x + Math.floor(Math.random()*3) + 1;
+      } else { // 수평축 (x축 평행)
+        const startX = Math.floor(Math.random() * 3) + 1;
+        let endX = startX + Math.floor(Math.random() * 4) + 3;
         if (endX > 9) endX = 9;
-        points.push({ x: endX, y: axisPos }); 
-        
-      } else if (axisType === 2) { 
-        let startX = Math.floor(Math.random() * 3) + 1; 
-        points.push({ x: startX, y: 10 - startX });
-        
-        let side = Math.random() < 0.5 ? 1 : -1;
-        for(let i=1; i<=numInnerPoints; i++) {
-            let x = startX + i * 2 + Math.floor(Math.random()*2);
-            if (x > 8) x = 8;
-            let y = 10 - x + (side * (Math.floor(Math.random()*3)+1));
-            if (y < 2) y = 2; if (y > 8) y = 8;
-            points.push({ x, y });
+
+        const maxH = side === 1 ? 10 - axisPos : axisPos;
+        const actualH = Math.min(Math.floor(Math.random() * 3) + 2, maxH);
+        const h = actualH * side;
+
+        if (shapeType === 0) { // 삼각형
+          const midX = startX + Math.floor((endX - startX) / 2) + (Math.random() < 0.5 ? 0 : 1);
+          points = [{ x: startX, y: axisPos }, { x: midX, y: axisPos + h }, { x: endX, y: axisPos }];
+        } else if (shapeType === 1) { // 직사각형
+          points = [{ x: startX, y: axisPos }, { x: startX, y: axisPos + h }, { x: endX, y: axisPos + h }, { x: endX, y: axisPos }];
+        } else if (shapeType === 2) { // 사다리꼴
+          const leftOffset = Math.floor(Math.random() * 2);
+          const rightOffset = Math.floor(Math.random() * 2);
+          points = [{ x: startX, y: axisPos }, { x: startX + leftOffset, y: axisPos + h }, { x: endX - rightOffset, y: axisPos + h }, { x: endX, y: axisPos }];
+          if (leftOffset === 0 && rightOffset === 0 && (endX - startX > 2)) {
+            points[1].x += 1;
+          }
+        } else { // 다각형
+          const x1 = startX + 1 + Math.floor(Math.random() * 2);
+          const x2 = endX - 1 - Math.floor(Math.random() * 2);
+          let h1 = h;
+          let h2 = Math.floor(actualH / 2 + 1) * side;
+          if (Math.random() < 0.5) { [h1, h2] = [h2, h1]; }
+          points = [{ x: startX, y: axisPos }, { x: x1, y: axisPos + h1 }, { x: x2, y: axisPos + h2 }, { x: endX, y: axisPos }];
         }
-        
-        let endX = points[points.length-1].x + Math.floor(Math.random()*2) + 1;
-        if (endX > 8) endX = 8;
-        points.push({ x: endX, y: 10 - endX });
-        
-      } else { 
-        let startX = Math.floor(Math.random() * 3) + 1;
-        points.push({ x: startX, y: startX });
-        
-        let side = Math.random() < 0.5 ? 1 : -1;
-        for(let i=1; i<=numInnerPoints; i++) {
-            let x = startX + i * 2 + Math.floor(Math.random()*2);
-            if (x > 8) x = 8; 
-            let y = x + (side * (Math.floor(Math.random()*3)+1));
-            if (y < 2) y = 2; if (y > 8) y = 8;
-            points.push({ x, y });
-        }
-        
-        let endX = points[points.length-1].x + Math.floor(Math.random()*2) + 1;
-        if (endX > 8) endX = 8;
-        points.push({ x: endX, y: endX });
       }
 
       let cleanPoints = [points[0]];
@@ -112,10 +108,8 @@
       cleanPoints.push(points[points.length-1]);
       
       let targetPoints = cleanPoints.map(p => {
-           if(axisType === 0) return { x: 10 - p.x, y: p.y };
-           if(axisType === 1) return { x: p.x, y: 10 - p.y };
-           if(axisType === 2) return { x: 10 - p.y, y: 10 - p.x }; 
-           if(axisType === 3) return { x: p.y, y: p.x }; 
+           if(axisType === 0) return { x: axisPos * 2 - p.x, y: p.y };
+           if(axisType === 1) return { x: p.x, y: axisPos * 2 - p.y };
       });
 
       let edges = new Set();
@@ -126,7 +120,7 @@
           edges.add(edge);
       }
 
-      return { axisType, points: cleanPoints, targetEdgesSet: Array.from(edges) };
+      return { axisType, axisPos, points: cleanPoints, targetEdgesSet: Array.from(edges) };
     };
 
     function App() {
@@ -360,10 +354,9 @@
                         ))}
                     </g>
 
-                    {problem.axisType === 0 && <line x1="50" y1="0" x2="50" y2="100" stroke="#ec4899" strokeWidth="1.5" />}
-                    {problem.axisType === 1 && <line x1="0" y1="50" x2="100" y2="50" stroke="#ec4899" strokeWidth="1.5" />}
-                    {problem.axisType === 2 && <line x1="100" y1="0" x2="0" y2="100" stroke="#ec4899" strokeWidth="1.5" />}
-                    {problem.axisType === 3 && <line x1="0" y1="0" x2="100" y2="100" stroke="#ec4899" strokeWidth="1.5" />}
+                    {/* 대칭축 시각화 - 초등 수학에 맞게 점선(strokeDasharray)으로 표현 */}
+                    {problem.axisType === 0 && <line x1={problem.axisPos * 10} y1="0" x2={problem.axisPos * 10} y2="100" stroke="#ec4899" strokeWidth="1.5" strokeDasharray="4" />}
+                    {problem.axisType === 1 && <line x1="0" y1={problem.axisPos * 10} x2="100" y2={problem.axisPos * 10} stroke="#ec4899" strokeWidth="1.5" strokeDasharray="4" />}
 
                     <polyline 
                         points={problem.points.map(p => `${p.x * 10},${p.y * 10}`).join(' ')} 
